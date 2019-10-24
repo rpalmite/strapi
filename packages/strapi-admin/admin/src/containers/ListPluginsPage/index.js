@@ -11,16 +11,13 @@ import { Helmet } from 'react-helmet';
 import { createStructuredSelector } from 'reselect';
 import { bindActionCreators, compose } from 'redux';
 import { FormattedMessage } from 'react-intl';
-import cn from 'classnames';
-
 import { PluginHeader, LoadingIndicatorPage } from 'strapi-helper-plugin';
-
 import ListPlugins from '../../components/ListPlugins';
-
 import injectSaga from '../../utils/injectSaga';
 import injectReducer from '../../utils/injectReducer';
+import Wrapper from './Wrapper';
+
 import {
-  makeSelectCurrentEnv,
   makeSelectPluginDeleteAction,
   makeSelectPlugins,
   makeSelectIsLoading,
@@ -32,14 +29,8 @@ import {
 } from './actions';
 import reducer from './reducer';
 import saga from './saga';
-import styles from './styles.scss';
 
 export class ListPluginsPage extends React.Component {
-  // eslint-disable-line react/prefer-stateless-function
-  getChildContext = () => ({
-    currentEnvironment: this.props.currentEnvironment,
-  });
-
   componentDidMount() {
     this.props.getPlugins();
   }
@@ -62,7 +53,7 @@ export class ListPluginsPage extends React.Component {
             </Helmet>
           )}
         </FormattedMessage>
-        <div className={cn('container-fluid', styles.listPluginsPage)}>
+        <Wrapper className="container-fluid">
           <PluginHeader
             title={{
               id: 'app.components.ListPluginsPage.title',
@@ -79,20 +70,16 @@ export class ListPluginsPage extends React.Component {
             onDeleteClick={this.props.onDeletePluginClick}
             onDeleteConfirm={this.props.onDeletePluginConfirm}
           />
-        </div>
+        </Wrapper>
       </div>
     );
   }
 }
 
-ListPluginsPage.childContextTypes = {
-  currentEnvironment: PropTypes.string.isRequired,
-};
-
-ListPluginsPage.contextTypes = {};
-
 ListPluginsPage.propTypes = {
-  currentEnvironment: PropTypes.string.isRequired,
+  global: PropTypes.shape({
+    currentEnvironment: PropTypes.string.isRequired,
+  }),
   getPlugins: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
@@ -103,7 +90,6 @@ ListPluginsPage.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  currentEnvironment: makeSelectCurrentEnv(),
   isLoading: makeSelectIsLoading(),
   pluginActionSucceeded: makeSelectPluginDeleteAction(),
   plugins: makeSelectPlugins(),
@@ -116,13 +102,13 @@ function mapDispatchToProps(dispatch) {
       onDeletePluginClick,
       onDeletePluginConfirm,
     },
-    dispatch,
+    dispatch
   );
 }
 
 const withConnect = connect(
   mapStateToProps,
-  mapDispatchToProps,
+  mapDispatchToProps
 );
 
 /* Remove this line if the container doesn't have a route and
@@ -138,5 +124,5 @@ const withSaga = injectSaga({ key: 'listPluginsPage', saga });
 export default compose(
   withReducer,
   withSaga,
-  withConnect,
+  withConnect
 )(ListPluginsPage);

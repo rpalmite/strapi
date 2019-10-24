@@ -7,7 +7,7 @@ const execa = require('execa');
 const ora = require('ora');
 
 const stopProcess = require('./utils/stop-process');
-const { trackUsage } = require('./utils/usage');
+const { trackUsage, captureStderr } = require('./utils/usage');
 const packageJSON = require('./resources/json/package.json');
 const databaseJSON = require('./resources/json/database.json.js');
 
@@ -97,14 +97,15 @@ module.exports = async function createProject(
     await trackUsage({
       event: 'didNotInstallProjectDependencies',
       scope,
-      error,
+      error: error.stderr.slice(-1024),
     });
 
-    stopProcess(
-      `${chalk.red(
-        'Error'
-      )} while installing dependencies:\n${error.stderr.trim()}`
-    );
+    console.error(`${chalk.red('Error')} while installing dependencies:`);
+    console.error(error.stderr);
+
+    await captureStderr('didNotInstallProjectDependencies', error);
+
+    stopProcess('Stopping installation');
   }
 
   await trackUsage({ event: 'didCreateProject', scope });
